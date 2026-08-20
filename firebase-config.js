@@ -1,5 +1,5 @@
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
+// Firebase JS SDK configuration
+export const firebaseConfig = {
   apiKey: "AIzaSyDcbBUoS6WQoFN2pPt7dWVC_PCcLFWOnf0",
   authDomain: "tailor-manager-6592c.firebaseapp.com",
   projectId: "tailor-manager-6592c",
