@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="ur" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#008f83" />
+  <meta name="description" content="Tailors کے لیے offline-first management app" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="stylesheet" href="./style.css" />
+  <title>Tailor Manager</title>
+</head>
+<body>
+  <div id="app">
+    <section id="loginScreen" class="screen login-screen">
+      <div class="login-card">
+        <div class="logo">✂️</div>
+        <h1>Tailor Manager</h1>
+        <p>صرف ٹیلرز کے لیے</p>
+        <button id="googleLoginBtn" class="primary-btn">Google سے Login کریں</button>
+        <small>آپ کا Google Email صرف شناخت کے لیے استعمال ہوگا؛ اصل ڈیٹا Firebase Cloud Database میں آپ کے اکاؤنٹ کے UID کے ساتھ محفوظ ہوگا۔</small>
+      </div>
+    </section>
+
+    <section id="mainScreen" class="screen hidden">
+      <header class="topbar">
+        <div>
+          <div class="app-title">✂️ Tailor Manager</div>
+          <div id="tailorNameLabel" class="muted">Tailor</div>
+        </div>
+        <div class="top-actions">
+          <span id="syncStatus" class="sync-badge offline">Offline</span>
+          <button id="menuBtn" class="icon-btn" title="Menu">☰</button>
+        </div>
+      </header>
+
+      <main class="content">
+        <div id="menuPanel" class="menu-panel hidden">
+          <button data-view="settings">⚙️ Settings</button>
+          <button id="exportBtn">📤 Export Data</button>
+          <button id="importBtn">📥 Import Data</button>
+          <button id="logoutBtn">🚪 Logout</button>
+        </div>
+
+        <section id="dashboardView" class="view">
+          <div class="welcome-card">
+            <div>
+              <div class="muted">خوش آمدید</div>
+              <h2 id="welcomeName">Tailor</h2>
+            </div>
+            <div class="user-avatar" id="userAvatar">T</div>
+          </div>
+
+          <div class="stats-grid">
+            <button class="stat-card" data-view="orders" data-filter="pending">
+              <span>⏳</span><b id="pendingCount">0</b><small>Pending</small>
+            </button>
+            <button class="stat-card" data-view="orders" data-filter="unpaid">
+              <span>🧵</span><b id="unpaidCount">0</b><small>Complete / Unpaid</small>
+            </button>
+            <button class="stat-card" data-view="orders" data-filter="paid">
+              <span>✅</span><b id="paidCount">0</b><small>Complete / Paid</small>
+            </button>
+            <div class="stat-card money">
+              <span>💰</span><b id="remainingAmount">Rs 0</b><small>Remaining</small>
+            </div>
+          </div>
+
+          <div class="home-grid">
+            <button class="big-action" data-view="customers">
+              <span>📏</span><strong>ناپ محفوظ کریں</strong><small>Customers & Measurements</small>
+            </button>
+            <button class="big-action" data-view="new-order">
+              <span>🧾</span><strong>نیا آرڈر</strong><small>New Order</small>
+            </button>
+            <button class="big-action" data-view="orders">
+              <span>📋</span><strong>تمام آرڈرز</strong><small>Pending / Unpaid / Paid</small>
+            </button>
+            <button class="big-action" data-view="customers">
+              <span>👥</span><strong>تمام کسٹمرز</strong><small>History & Measurements</small>
+            </button>
+          </div>
+        </section>
+
+        <section id="customersView" class="view hidden">
+          <div class="section-head">
+            <div>
+              <h2>کسٹمرز اور محفوظ ناپ</h2>
+              <p class="muted">ہر کسٹمر کا مستقل نمبر اور اس کے تمام پرانے آرڈر محفوظ رہیں گے۔</p>
+            </div>
+            <button class="primary-btn small" id="addCustomerBtn">+ نیا کسٹمر</button>
+          </div>
+          <input id="customerSearch" class="search" placeholder="نام یا موبائل نمبر تلاش کریں..." />
+          <div id="customerList" class="list"></div>
+        </section>
+
+        <section id="customerFormView" class="view hidden">
+          <div class="section-head">
+            <div><h2 id="customerFormTitle">نیا کسٹمر</h2><p class="muted">نام، نمبر اور ناپ محفوظ کریں۔</p></div>
+            <button class="ghost-btn" data-view="customers">واپس</button>
+          </div>
+          <form id="customerForm" class="form-card">
+            <input type="hidden" id="customerId" />
+            <div class="form-grid">
+              <label>نام<input id="customerName" required /></label>
+              <label>فون نمبر<input id="customerPhone" inputmode="tel" /></label>
+              <label>پتہ / علاقہ<input id="customerArea" /></label>
+            </div>
+
+            <h3 class="form-title">📏 ناپ</h3>
+            <div class="form-grid measurements">
+              <label>لمبائی<input id="mLength" /></label>
+              <label>تیرا<input id="mTera" /></label>
+              <label>آستین<input id="mSleeve" /></label>
+              <label>گلہ<input id="mNeck" /></label>
+              <label>چھاتی<input id="mChest" /></label>
+              <label>کمر<input id="mWaist" /></label>
+              <label>دامن<input id="mDaman" /></label>
+              <label>شلوار لمبائی مکمل<input id="mShalwarLength" /></label>
+              <label>پانچہ<input id="mPanja" /></label>
+            </div>
+
+            <h3 class="form-title">👔 ڈیزائن / انتخاب</h3>
+            <div class="option-section">
+              <div class="option-title">دامن</div>
+              <div class="choice-row">
+                <label class="choice"><input type="radio" name="daman" value="گول" /> گول</label>
+                <label class="choice"><input type="radio" name="daman" value="چورس" /> چورس</label>
+              </div>
+            </div>
+
+            <div class="option-section">
+              <div class="option-title">جیب</div>
+              <div class="choice-row wrap">
+                <label class="choice"><input type="checkbox" id="pocketDouble" /> دوبغل</label>
+                <label class="choice"><input type="checkbox" id="pocketFront" /> سامنے</label>
+                <label class="choice"><input type="checkbox" id="pocketSide" /> سائیڈ</label>
+              </div>
+            </div>
+
+            <div class="option-section">
+              <div class="choice-row wrap">
+                <label class="choice"><input type="checkbox" id="shalwarPocket" /> شلوار جیب</label>
+                <label class="choice"><input type="checkbox" id="tilaGoot" /> تیلا گوٹ</label>
+                <label class="choice"><input type="checkbox" id="fitCuff" /> فٹ کف</label>
+                <label class="choice"><input type="checkbox" id="simpleSleeve" /> سادہ آستین</label>
+                <label class="choice"><input type="checkbox" id="cuffSleeve" /> کف دار</label>
+                <label class="choice"><input type="checkbox" id="tops" /> ٹوپس</label>
+                <label class="choice"><input type="checkbox" id="band" /> بین</label>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="primary-btn">💾 ناپ محفوظ کریں</button>
+              <button type="button" id="deleteCustomerBtn" class="danger-btn hidden">حذف کریں</button>
+            </div>
+          </form>
+        </section>
+
+        <section id="newOrderView" class="view hidden">
+          <div class="section-head">
+            <div><h2>نیا آرڈر</h2><p class="muted">پرانے کسٹمر کا ناپ خودکار طور پر بھر جائے گا۔</p></div>
+            <button class="ghost-btn" data-view="dashboard">واپس</button>
+          </div>
+
+          <form id="orderForm" class="form-card">
+            <div class="choice-row">
+              <label class="choice large"><input type="radio" name="customerType" value="existing" checked /> پرانا / محفوظ کسٹمر</label>
+              <label class="choice large"><input type="radio" name="customerType" value="new" /> نیا کسٹمر</label>
+            </div>
+
+            <div id="existingCustomerBox">
+              <label>کسٹمر تلاش کریں
+                <input id="orderCustomerSearch" class="search" placeholder="نام یا نمبر لکھیں..." autocomplete="off" />
+              </label>
+              <div id="customerSuggestions" class="suggestions"></div>
+              <input type="hidden" id="orderCustomerId" />
+              <div id="selectedCustomerCard" class="selected-card hidden"></div>
+            </div>
+
+            <div id="newOrderCustomerBox" class="hidden">
+              <div class="form-grid">
+                <label>نیا کسٹمر نام<input id="orderNewName" /></label>
+                <label>فون نمبر<input id="orderNewPhone" inputmode="tel" /></label>
+                <label>پتہ / علاقہ<input id="orderNewArea" /></label>
+              </div>
+            </div>
+
+            <h3 class="form-title">📏 آرڈر کا ناپ</h3>
+            <div class="form-grid measurements">
+              <label>لمبائی<input id="oLength" /></label>
+              <label>تیرا<input id="oTera" /></label>
+              <label>آستین<input id="oSleeve" /></label>
+              <label>گلہ<input id="oNeck" /></label>
+              <label>چھاتی<input id="oChest" /></label>
+              <label>کمر<input id="oWaist" /></label>
+              <label>دامن<input id="oDaman" /></label>
+              <label>شلوار لمبائی مکمل<input id="oShalwarLength" /></label>
+              <label>پانچہ<input id="oPanja" /></label>
+            </div>
+
+            <h3 class="form-title">🎨 ڈیزائن اور رنگ</h3>
+            <div class="form-grid">
+              <label>کپڑے کا رنگ<input id="orderColor" type="color" value="#ffffff" /></label>
+              <label>رنگ کا نام<input id="orderColorName" placeholder="مثلاً سفید، کالا، نیلا" /></label>
+              <label>تعداد<input id="orderQuantity" type="number" min="1" value="1" /></label>
+              <label>ڈیلیوری تاریخ<input id="deliveryDate" type="date" /></label>
+            </div>
+
+            <div class="option-section">
+              <div class="option-title">دامن</div>
+              <div class="choice-row">
+                <label class="choice"><input type="radio" name="orderDaman" value="گول" /> گول</label>
+                <label class="choice"><input type="radio" name="orderDaman" value="چورس" /> چورس</label>
+              </div>
+            </div>
+            <div class="option-section">
+              <div class="option-title">جیب</div>
+              <div class="choice-row wrap">
+                <label class="choice"><input type="checkbox" id="oPocketDouble" /> دوبغل</label>
+                <label class="choice"><input type="checkbox" id="oPocketFront" /> سامنے</label>
+                <label class="choice"><input type="checkbox" id="oPocketSide" /> سائیڈ</label>
+                <label class="choice"><input type="checkbox" id="oShalwarPocket" /> شلوار جیب</label>
+              </div>
+            </div>
+
+            <div class="form-grid money-grid">
+              <label>کل قیمت (Rs)<input id="totalPrice" type="number" min="0" value="0" /></label>
+              <label>وصول شدہ (Rs)<input id="receivedAmount" type="number" min="0" value="0" /></label>
+              <label>باقی رقم (Rs)<input id="remainingPreview" type="number" value="0" readonly /></label>
+            </div>
+            <label>نوٹس<textarea id="orderNotes" rows="3" placeholder="مثلاً سفید شلوار، خاص ہدایت وغیرہ"></textarea></label>
+
+            <button type="submit" class="primary-btn full">🧾 آرڈر محفوظ کریں</button>
+          </form>
+        </section>
+
+        <section id="ordersView" class="view hidden">
+          <div class="section-head">
+            <div><h2>آرڈرز</h2><p class="muted">Pending → Complete/Unpaid → Complete/Paid</p></div>
+            <button class="primary-btn small" data-view="new-order">+ نیا آرڈر</button>
+          </div>
+          <div class="tabs">
+            <button class="tab active" data-filter="all">All</button>
+            <button class="tab" data-filter="pending">Pending</button>
+            <button class="tab" data-filter="unpaid">Complete / Unpaid</button>
+            <button class="tab" data-filter="paid">Complete / Paid</button>
+          </div>
+          <div id="ordersList" class="list"></div>
+        </section>
+
+        <section id="customerHistoryView" class="view hidden">
+          <div class="section-head">
+            <div><h2 id="historyCustomerName">کسٹمر</h2><p id="historyCustomerMeta" class="muted"></p></div>
+            <button class="ghost-btn" data-view="customers">واپس</button>
+          </div>
+          <div id="historyMeasurements" class="form-card"></div>
+          <h3>📚 آرڈر ہسٹری</h3>
+          <div id="historyOrders" class="list"></div>
+        </section>
+
+        <section id="settingsView" class="view hidden">
+          <div class="section-head">
+            <div><h2>Settings</h2><p class="muted">اپنے Tailor Profile اور Data Backup کو manage کریں۔</p></div>
+            <button class="ghost-btn" data-view="dashboard">واپس</button>
+          </div>
+          <form id="settingsForm" class="form-card">
+            <div class="form-grid">
+              <label>Tailor / دکان کا نام<input id="settingsTailorName" required /></label>
+              <label>فون نمبر<input id="settingsPhone" /></label>
+              <label>پتہ / علاقہ<input id="settingsArea" /></label>
+            </div>
+            <button class="primary-btn" type="submit">💾 Profile محفوظ کریں</button>
+          </form>
+          <div class="form-card backup-card">
+            <h3>☁️ Cloud Sync</h3>
+            <p>Google Login کے بعد ڈیٹا آپ کے Firebase account کے UID کے تحت محفوظ ہوتا ہے۔ Internet نہ ہو تو app local cache سے چلتی رہے گی اور Internet واپس آنے پر sync ہوگا۔</p>
+            <button id="exportBtn2" class="secondary-btn">📤 JSON Backup Export</button>
+            <button id="importBtn2" class="secondary-btn">📥 JSON Backup Import</button>
+            <input id="importFile" type="file" accept=".json,application/json" hidden />
+          </div>
+        </section>
+      </main>
+
+      <nav class="bottom-nav">
+        <button data-view="dashboard">🏠<span>Home</span></button>
+        <button data-view="customers">📏<span>ناپ</span></button>
+        <button data-view="new-order">➕<span>Order</span></button>
+        <button data-view="orders">📋<span>Orders</span></button>
+        <button data-view="settings">⚙️<span>More</span></button>
+      </nav>
+    </section>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

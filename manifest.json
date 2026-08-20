@@ -1,0 +1,10 @@
+{
+  "name": "Tailor Manager",
+  "short_name": "Tailor",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f3f7f7",
+  "theme_color": "#008f83",
+  "lang": "ur",
+  "dir": "rtl"
+}
