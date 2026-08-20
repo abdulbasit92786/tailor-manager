@@ -1,3 +1,4 @@
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyDcbBUoS6WQoFN2pPt7dWVC_PCcLFWOnf0",
   authDomain: "tailor-manager-6592c.firebaseapp.com",
@@ -7,5 +8,3 @@ const firebaseConfig = {
   appId: "1:699918688101:web:884007f4e41a2058d80b8c",
   measurementId: "G-KXK84H601E"
 };
-
-export { firebaseConfig };
